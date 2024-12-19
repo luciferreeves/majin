@@ -1,0 +1,84 @@
+package templates
+
+templ Login() {
+@Base("Terminal Login") {
+<div class="flex items-center justify-center h-screen">
+    <div class="w-96 bg-black/50 backdrop-blur-sm border border-cyan-500/30 p-8">
+        <div class="mb-8 text-center">
+            <h1 class="text-cyan-500 text-2xl font-mono tracking-wider">MAJIN MAIL SYSTEM</h1>
+            <p class="text-cyan-600 text-sm font-mono">TERMINAL ACCESS</p>
+        </div>
+        <form id="login-form" hx-post="/auth/login" hx-target="#main-content" hx-swap="innerHTML"
+            hx-indicator="#login-loading" class="space-y-6">
+            <div id="error-message" class="text-red-500 text-center mb-4 hidden"></div>
+
+            <div class="space-y-1">
+                <label class="block text-cyan-500 text-xs font-mono">USER_ID</label>
+                <input type="text" name="email"
+                    class="w-full bg-black/30 border border-cyan-500/50 text-cyan-400 p-2 font-mono text-sm focus:outline-none focus:border-cyan-500 placeholder-cyan-800"
+                    placeholder="Enter credentials" autocomplete="off" required />
+            </div>
+            <div class="space-y-1">
+                <label class="block text-cyan-500 text-xs font-mono">ACCESS_KEY</label>
+                <input type="password" name="password"
+                    class="w-full bg-black/30 border border-cyan-500/50 text-cyan-400 p-2 font-mono text-sm focus:outline-none focus:border-cyan-500 placeholder-cyan-800"
+                    placeholder="Enter access key" required />
+            </div>
+            <button type="submit"
+                class="w-full bg-cyan-900/50 border border-cyan-500/50 text-cyan-400 p-2 font-mono hover:bg-cyan-900/70 focus:outline-none active:bg-cyan-950 relative">
+                AUTHENTICATE
+            </button>
+        </form>
+
+        <div id="login-loading"
+            class="htmx-indicator fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+            <div class="animate-pulse text-cyan-500 text-2xl font-mono">
+                AUTHENTICATING...
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('login-form');
+                const errorMessage = document.getElementById('error-message');
+
+                form.addEventListener('htmx:beforeRequest', (event) => {
+                    form.querySelector('button').disabled = true;
+                    errorMessage.classList.add('hidden');
+                });
+
+                form.addEventListener('htmx:afterRequest', (event) => {
+                    form.querySelector('button').disabled = false;
+
+                    if (event.detail.successful) {
+                        showNotification('ACCESS GRANTED - ESTABLISHING CONNECTION');
+
+                        // Use HTMX to load mail page
+                        htmx.ajax('GET', '/mail', '#main-content');
+                    } else {
+                        const response = event.detail.xhr.response;
+                        let errorText = 'ACCESS DENIED - INVALID CREDENTIALS';
+
+                        if (response instanceof Document) {
+                            errorText = response.body.textContent.trim();
+                        } else if (typeof response === 'string') {
+                            errorText = response.trim();
+                        }
+
+                        errorMessage.textContent = errorText;
+                        errorMessage.classList.remove('hidden');
+                        showNotification('ACCESS DENIED - INVALID CREDENTIALS', 'error');
+                    }
+                });
+
+                form.addEventListener('htmx:configRequest', (evt) => {
+                    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+                    const token = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+                    evt.detail.headers['X-Csrf-Token'] = token;
+                });
+            });
+        </script>
+    </div>
+</div>
+}
+}
