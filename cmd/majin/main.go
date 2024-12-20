@@ -81,7 +81,7 @@ func main() {
 	}
 
 	app.Use(helmet.New(helmet.Config{
-		ContentSecurityPolicy:     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+		ContentSecurityPolicy:     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none';",
 		XFrameOptions:             "SAMEORIGIN",
 		ReferrerPolicy:            "strict-origin-when-cross-origin",
 		CrossOriginEmbedderPolicy: "credentialless",

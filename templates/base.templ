@@ -1,80 +1,50 @@
 package templates
 
-import "majin/internal/template"
-
 templ Base(title string) {
-<!DOCTYPE html>
-<html lang="en">
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+			<title>Majin Mail | { title }</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+			<link href="/static/css/styles.css" rel="stylesheet"/>
+			<script src="/static/js/htmx.min.js"></script>
+		</head>
+		<body class="min-h-screen bg-slate-900">
+			<div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+			<div id="main-content">
+				{ children... }
+			</div>
+			<script>
+                function showNotification(message, type = 'info') {
+                    const container = document.getElementById('notification-container');
+                    const notification = document.createElement('div');
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content={ template.GetData(ctx).CSRFToken } />
-    <title>Majin Mail | { title }</title>
-    <script src="/static/js/htmx.min.js"></script>
-    <link href="/static/css/styles.css" rel="stylesheet" />
-    <style>
-        @keyframes slideIn {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
+                    const bgColor = type === 'error' ? 'bg-red-900/50' : 'bg-cyan-900/50';
+                    const borderColor = type === 'error' ? 'border-red-500/30' : 'border-cyan-500/30';
+                    const textColor = type === 'error' ? 'text-red-400' : 'text-cyan-400';
 
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+                    notification.className = `${bgColor} ${borderColor} ${textColor} border backdrop-blur-sm p-4 text-sm notification-enter w-96`;
+                    notification.textContent = message;
 
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
+                    container.appendChild(notification);
 
-            to {
-                opacity: 0;
-            }
-        }
+                    const timeout = setTimeout(() => {
+                        notification.classList.add('notification-exit');
+                        setTimeout(() => {
+                            if (container.contains(notification)) {
+                                container.removeChild(notification);
+                            }
+                        }, 300);
+                    }, 3000);
 
-        .notification-enter {
-            animation: slideIn 0.3s ease-out forwards;
-        }
-
-        .notification-exit {
-            animation: fadeOut 0.3s ease-out forwards;
-        }
-    </style>
-</head>
-
-<body class="min-h-screen bg-slate-900">
-    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
-    <div id="main-content">
-        { children... }
-    </div>
-
-    <script>
-        function showNotification(message, type = 'info') {
-            const container = document.getElementById('notification-container');
-            const notification = document.createElement('div');
-
-            const bgColor = type === 'error' ? 'bg-red-900/50' : 'bg-cyan-900/50';
-            const borderColor = type === 'error' ? 'border-red-500/30' : 'border-cyan-500/30';
-            const textColor = type === 'error' ? 'text-red-400' : 'text-cyan-400';
-
-            notification.className = `${bgColor} ${borderColor} ${textColor} border backdrop-blur-sm p-4 font-mono text-sm notification-enter`;
-            notification.textContent = message;
-
-            container.appendChild(notification);
-
-            setTimeout(() => {
-                notification.classList.add('notification-exit');
-                setTimeout(() => {
-                    container.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-    </script>
-</body>
-
-</html>
+                    return { element: notification, timeout: timeout };
+                }
+            </script>
+		</body>
+	</html>
 }
